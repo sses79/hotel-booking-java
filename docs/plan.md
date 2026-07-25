@@ -46,7 +46,7 @@ new-java/
   .mvn/
   src/
     main/
-      java/com/example/hotelbooking/
+      java/com/ti5g/hotelbooking/
         HotelBookingApplication.java
         api/
           controller/
@@ -64,7 +64,7 @@ new-java/
         db/migration/
           V1__create_hotel_booking_schema.sql
     test/
-      java/com/example/hotelbooking/
+      java/com/ti5g/hotelbooking/
         unit/
         integration/
   infra/

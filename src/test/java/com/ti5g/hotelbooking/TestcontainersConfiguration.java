@@ -1,4 +1,4 @@
-package com.example.hotelbooking;
+package com.ti5g.hotelbooking;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
