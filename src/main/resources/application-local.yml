@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:HotelBooking};encrypt=true;trustServerCertificate=true
+    username: ${DB_USER:sa}
+    password: ${MSSQL_SA_PASSWORD:Change_this_local_password_123!}
