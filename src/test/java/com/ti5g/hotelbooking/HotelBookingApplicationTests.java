@@ -1,4 +1,4 @@
-package com.example.hotelbooking;
+package com.ti5g.hotelbooking;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

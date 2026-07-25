@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Application code lives in `src/main/java/com/example/hotelbooking`. Add new code
+Application code lives in `src/main/java/com/ti5g/hotelbooking`. Add new code
 in feature-oriented packages beneath that root, keeping controllers, services,
 repositories, and domain types close to their feature. Runtime configuration is
 in `src/main/resources`; local overrides belong in `application-local.yml`.
