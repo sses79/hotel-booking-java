@@ -21,6 +21,14 @@ Server container.
 ./mvnw verify
 ```
 
+## Continuous Integration
+
+GitHub Actions validates the Docker Compose configuration and runs the complete
+Maven verification suite with Temurin Java 21. CI runs for pull requests into
+`main`, pushes to `dev` or `main`, and manual workflow dispatches. Integration
+tests create their own SQL Server through Testcontainers, so CI does not need
+database secrets.
+
 ## Run Locally
 
 Create local environment configuration:
