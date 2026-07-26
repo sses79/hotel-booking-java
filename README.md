@@ -1,9 +1,9 @@
 # Hotel Booking API
 
 Java and Spring Boot implementation of the hotel booking backend challenge.
-Phase 1 provides the application scaffold, SQL Server development environment,
-Flyway schema, health endpoint, OpenAPI tooling, and SQL Server-backed
-integration test foundation.
+Phases 1 and 2 provide the application scaffold, SQL Server development
+environment, Flyway schema, JPA model, domain rules, deterministic test data,
+health endpoint, OpenAPI tooling, and SQL Server-backed integration tests.
 
 ## Prerequisites
 
@@ -47,9 +47,26 @@ set +a
 Available endpoints:
 
 ```text
+POST http://localhost:8080/api/admin/seed
+POST http://localhost:8080/api/admin/reset
 GET http://localhost:8080/actuator/health
 GET http://localhost:8080/v3/api-docs
 GET http://localhost:8080/swagger-ui/index.html
+```
+
+Seed predictable local data:
+
+```bash
+curl -i -X POST http://localhost:8080/api/admin/seed
+```
+
+The seed operation first resets all data, then creates `Grand Plaza Hotel`
+with its fixed ID `00000000-0000-0000-0000-000000000001` and six rooms.
+
+Reset all application data:
+
+```bash
+curl -i -X POST http://localhost:8080/api/admin/reset
 ```
 
 Stop SQL Server while preserving its data:
