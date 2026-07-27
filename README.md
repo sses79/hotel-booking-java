@@ -1,9 +1,10 @@
 # Hotel Booking API
 
 Java and Spring Boot implementation of the hotel booking backend challenge.
-Phases 1 and 2 provide the application scaffold, SQL Server development
+Phases 1 through 3 provide the application scaffold, SQL Server development
 environment, Flyway schema, JPA model, domain rules, deterministic test data,
-health endpoint, OpenAPI tooling, and SQL Server-backed integration tests.
+hotel search, room availability, health endpoint, OpenAPI tooling, and SQL
+Server-backed integration tests.
 
 ## Prerequisites
 
@@ -55,6 +56,8 @@ set +a
 Available endpoints:
 
 ```text
+GET http://localhost:8080/api/hotels?name=Grand
+GET http://localhost:8080/api/hotels/{hotelId}/rooms/available?checkIn=2026-08-01&checkOut=2026-08-03&guests=2&roomType=DOUBLE
 POST http://localhost:8080/api/admin/seed
 POST http://localhost:8080/api/admin/reset
 GET http://localhost:8080/actuator/health
