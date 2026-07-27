@@ -411,9 +411,19 @@ Also verify two concurrent back-to-back stays can use the same room.
 
 ### Phase 6 — Optional Azure parity
 
-- Add a multi-stage Java container image.
-- Reuse the existing Azure shape: GHCR commit-SHA image to Azure Container Apps
-  Consumption and Azure SQL Database serverless.
+- Add GraalVM Native Build Tools and Spring AOT as a deployment path while
+  retaining Temurin JVM builds for fast local development and the main test
+  suite.
+- Build a Linux `amd64` native application container with Spring Boot
+  Buildpacks. GraalVM is used during compilation; the final runtime image
+  contains the native executable and no JVM.
+- Smoke-test the native container against SQL Server, including Flyway startup,
+  health, hotel search, availability, OpenAPI JSON, and Swagger UI.
+- Publish the native image to GHCR with an immutable commit-SHA tag from an
+  `ubuntu-latest` GitHub Actions runner. Native images are platform-specific, so
+  release images must be built for the Azure target architecture.
+- Reuse the existing Azure shape: the GHCR native image runs in Azure Container
+  Apps Consumption and connects to Azure SQL Database serverless.
 - Translate only application-specific environment variables and container
   settings; retain the useful Bicep architecture from the source project.
 
