@@ -1,10 +1,10 @@
 # Hotel Booking API
 
 Java and Spring Boot implementation of the hotel booking backend challenge.
-Phases 1 through 3 provide the application scaffold, SQL Server development
+Phases 1 through 4 provide the application scaffold, SQL Server development
 environment, Flyway schema, JPA model, domain rules, deterministic test data,
 hotel search, room availability, health endpoint, OpenAPI tooling, and SQL
-Server-backed integration tests.
+Server-backed booking and concurrency tests.
 
 ## Prerequisites
 
@@ -58,6 +58,8 @@ Available endpoints:
 ```text
 GET http://localhost:8080/api/hotels?name=Grand
 GET http://localhost:8080/api/hotels/{hotelId}/rooms/available?checkIn=2026-08-01&checkOut=2026-08-03&guests=2&roomType=DOUBLE
+POST http://localhost:8080/api/bookings
+GET http://localhost:8080/api/bookings/{reference}
 POST http://localhost:8080/api/admin/seed
 POST http://localhost:8080/api/admin/reset
 GET http://localhost:8080/actuator/health
@@ -73,6 +75,25 @@ curl -i -X POST http://localhost:8080/api/admin/seed
 
 The seed operation first resets all data, then creates `Grand Plaza Hotel`
 with its fixed ID `00000000-0000-0000-0000-000000000001` and six rooms.
+
+Create a booking:
+
+```bash
+curl -i -X POST http://localhost:8080/api/bookings \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "hotelId": "00000000-0000-0000-0000-000000000001",
+    "guestName": "Ada Lovelace",
+    "guestCount": 2,
+    "checkInDate": "2026-08-01",
+    "checkOutDate": "2026-08-03",
+    "roomType": "DOUBLE"
+  }'
+```
+
+The response is `201 Created` and its `Location` header identifies the lookup
+URL, such as `/api/bookings/HB-123456`. Booking conflicts return an RFC 9457
+problem response with status `409`.
 
 Reset all application data:
 

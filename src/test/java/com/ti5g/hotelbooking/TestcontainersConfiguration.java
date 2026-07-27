@@ -1,5 +1,6 @@
 package com.ti5g.hotelbooking;
 
+import com.ti5g.hotelbooking.integration.AvailabilityBarrier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,11 @@ public class TestcontainersConfiguration {
 		return new MSSQLServerContainer(
 				DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"))
 				.acceptLicense();
+	}
+
+	@Bean
+	AvailabilityBarrier availabilityBarrier() {
+		return new AvailabilityBarrier();
 	}
 
 }

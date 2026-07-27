@@ -10,6 +10,7 @@ import com.ti5g.hotelbooking.domain.RoomCandidate;
 import com.ti5g.hotelbooking.domain.RoomType;
 import com.ti5g.hotelbooking.persistence.repository.HotelRepository;
 import com.ti5g.hotelbooking.persistence.repository.RoomRepository;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +20,17 @@ public class RoomAvailabilityService {
 	private final HotelRepository hotelRepository;
 	private final RoomRepository roomRepository;
 	private final Clock clock;
+	private final ObjectProvider<AvailabilityReadObserver> availabilityReadObservers;
 
 	public RoomAvailabilityService(
 			HotelRepository hotelRepository,
 			RoomRepository roomRepository,
-			Clock clock) {
+			Clock clock,
+			ObjectProvider<AvailabilityReadObserver> availabilityReadObservers) {
 		this.hotelRepository = hotelRepository;
 		this.roomRepository = roomRepository;
 		this.clock = clock;
+		this.availabilityReadObservers = availabilityReadObservers;
 	}
 
 	@Transactional(readOnly = true)
@@ -52,12 +56,17 @@ public class RoomAvailabilityService {
 			throw new HotelNotFoundException(hotelId);
 		}
 
-		var candidates = roomRepository.findAvailableRooms(
-						hotelId,
-						checkInDate,
-						checkOutDate,
-						guests,
-						roomType)
+		var rooms = roomRepository.findAvailableRooms(
+				hotelId,
+				checkInDate,
+				checkOutDate,
+				guests,
+				roomType);
+
+		availabilityReadObservers.orderedStream()
+				.forEach(AvailabilityReadObserver::afterAvailabilityRead);
+
+		var candidates = rooms
 				.stream()
 				.map(room -> new RoomCandidate(
 						room.getId(),
