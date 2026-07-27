@@ -1,6 +1,9 @@
 spring:
   application:
     name: hotel-booking
+  jackson:
+    mapper:
+      accept-case-insensitive-enums: true
   jpa:
     open-in-view: false
     hibernate:
