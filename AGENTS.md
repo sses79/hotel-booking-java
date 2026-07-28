@@ -15,8 +15,9 @@ Flyway owns the database schema through versioned files in
 
 - `./mvnw verify` compiles, runs all tests, and packages the application.
   Docker Desktop must be running because integration tests use Testcontainers.
-- `docker compose --env-file .env -f infra/local/compose.yaml up -d --wait`
+- `docker compose --env-file .env -f infra/local/compose.yaml up -d --wait sql sql-init`
   starts SQL Server and creates the local `HotelBooking` database.
+- Add `--build` and omit the service names to run the containerized API too.
 - `./mvnw spring-boot:run -Dspring-boot.run.profiles=local` runs the API after
   variables from `.env` have been exported.
 - `docker compose --env-file .env -f infra/local/compose.yaml down` stops local

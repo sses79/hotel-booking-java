@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:8080
+@hotelId = 00000000-0000-0000-0000-000000000001
+@checkIn = 2030-08-01
+@checkOut = 2030-08-03
+
+### Health
+GET {{baseUrl}}/actuator/health
+
+### Reset all data
+POST {{baseUrl}}/api/admin/reset
+
+### Seed Grand Plaza Hotel and six rooms
+POST {{baseUrl}}/api/admin/seed
+
+### Find the seeded hotel
+GET {{baseUrl}}/api/hotels?name=Grand
+
+### Find available rooms
+GET {{baseUrl}}/api/hotels/{{hotelId}}/rooms/available?checkIn={{checkIn}}&checkOut={{checkOut}}&guests=2&roomType=DOUBLE
+
+### Create a booking
+# @name createBooking
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+
+{
+  "hotelId": "{{hotelId}}",
+  "guestName": "Ada Lovelace",
+  "guestCount": 2,
+  "checkInDate": "{{checkIn}}",
+  "checkOutDate": "{{checkOut}}",
+  "roomType": "DOUBLE"
+}
+
+### Look up the booking created above
+GET {{baseUrl}}/api/bookings/{{createBooking.response.body.$.bookingReference}}

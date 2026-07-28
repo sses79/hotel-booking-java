@@ -21,7 +21,7 @@ jobs:
   build-and-test:
     name: Build and test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Check out repository
@@ -41,5 +41,26 @@ jobs:
       - name: Validate local Docker Compose configuration
         run: docker compose --env-file .env.example -f infra/local/compose.yaml config --quiet
 
+      - name: Validate dependencies and formatting
+        run: ./mvnw --batch-mode --no-transfer-progress validate spotless:check
+
       - name: Build and test
         run: ./mvnw --batch-mode --no-transfer-progress clean verify
+
+      - name: Build and start application containers
+        run: docker compose --env-file .env.example -f infra/local/compose.yaml up --build --detach --wait
+
+      - name: Smoke-test containerized API
+        run: |
+          curl --fail --silent --show-error http://localhost:8080/actuator/health
+          curl --fail --silent --show-error http://localhost:8080/v3/api-docs
+          curl --fail --silent --show-error --request POST http://localhost:8080/api/admin/seed
+          curl --fail --silent --show-error "http://localhost:8080/api/hotels?name=Grand"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose --env-file .env.example -f infra/local/compose.yaml logs
+
+      - name: Stop application containers
+        if: always()
+        run: docker compose --env-file .env.example -f infra/local/compose.yaml down --volumes

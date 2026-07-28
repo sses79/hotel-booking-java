@@ -7,6 +7,10 @@ import com.ti5g.hotelbooking.api.dto.booking.CreateBookingRequest;
 import com.ti5g.hotelbooking.service.booking.BookingDetails;
 import com.ti5g.hotelbooking.service.booking.BookingService;
 import com.ti5g.hotelbooking.service.booking.CreateBookingCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +23,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/bookings")
+@Tag(name = "Bookings")
 public class BookingsController {
 
 	private final BookingService bookingService;
@@ -28,6 +33,18 @@ public class BookingsController {
 	}
 
 	@PostMapping
+	@Operation(
+		summary = "Create a booking",
+		description = """
+				Selects the first suitable room inside a serializable transaction.
+				Returns 409 when no matching room remains.
+				""")
+	@ApiResponses({
+		@ApiResponse(responseCode = "201", description = "Booking created"),
+		@ApiResponse(responseCode = "400", description = "Invalid booking request"),
+		@ApiResponse(responseCode = "404", description = "Hotel not found"),
+		@ApiResponse(responseCode = "409", description = "No matching room available")
+	})
 	public ResponseEntity<BookingResponse> create(
 			@Valid @RequestBody CreateBookingRequest request) {
 		var booking = bookingService.create(new CreateBookingCommand(
@@ -47,6 +64,13 @@ public class BookingsController {
 	}
 
 	@GetMapping("/{reference}")
+	@Operation(
+		summary = "Find a booking",
+		description = "Looks up a booking by its HB-###### reference.",
+		responses = {
+			@ApiResponse(responseCode = "200", description = "Booking details"),
+			@ApiResponse(responseCode = "404", description = "Booking not found")
+		})
 	public BookingResponse getByReference(@PathVariable String reference) {
 		return toResponse(bookingService.getByReference(reference));
 	}

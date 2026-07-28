@@ -9,6 +9,10 @@ import com.ti5g.hotelbooking.api.dto.room.AvailableRoomResponse;
 import com.ti5g.hotelbooking.domain.RoomType;
 import com.ti5g.hotelbooking.service.availability.RoomAvailabilityService;
 import com.ti5g.hotelbooking.service.hotel.HotelSearchService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/hotels")
+@Tag(name = "Hotels")
 public class HotelsController {
 
 	private final HotelSearchService hotelSearchService;
@@ -31,6 +36,10 @@ public class HotelsController {
 	}
 
 	@GetMapping
+	@Operation(
+		summary = "Search hotels",
+		description = "Returns every hotel when name is omitted; matching ignores case.",
+		responses = @ApiResponse(responseCode = "200", description = "Matching hotels"))
 	public List<HotelResponse> search(
 			@RequestParam(required = false) String name) {
 		return hotelSearchService.search(name).stream()
@@ -39,6 +48,17 @@ public class HotelsController {
 	}
 
 	@GetMapping("/{hotelId}/rooms/available")
+	@Operation(
+		summary = "Find available rooms",
+		description = """
+				Filters by half-open stay dates, guest capacity, and optional room
+				type. Results use deterministic booking order.
+				""")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Available rooms"),
+		@ApiResponse(responseCode = "400", description = "Invalid availability request"),
+		@ApiResponse(responseCode = "404", description = "Hotel not found")
+	})
 	public List<AvailableRoomResponse> findAvailableRooms(
 			@PathVariable UUID hotelId,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
