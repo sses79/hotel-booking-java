@@ -10,12 +10,13 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
-	@Bean
+	@Bean(destroyMethod = "stop")
 	@ServiceConnection
 	MSSQLServerContainer sqlServerContainer() {
-		return new MSSQLServerContainer(
-				DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"))
-				.acceptLicense();
+		MSSQLServerContainer container = new MSSQLServerContainer(
+				DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-latest"));
+		container.acceptLicense();
+		return container;
 	}
 
 	@Bean

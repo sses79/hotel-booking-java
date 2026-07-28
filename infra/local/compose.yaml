@@ -1,6 +1,26 @@
 name: hotel-booking-java
 
 services:
+  app:
+    image: hotel-booking-java:local
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_HOST: sql
+      DB_PORT: 1433
+      DB_NAME: HotelBooking
+      DB_USER: sa
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+    ports:
+      - "8080:8080"
+    depends_on:
+      sql-init:
+        condition: service_completed_successfully
+    networks:
+      - hotel-booking
+
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     platform: linux/amd64
