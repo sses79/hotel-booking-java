@@ -51,11 +51,7 @@ jobs:
         run: docker compose --env-file .env.example -f infra/local/compose.yaml up --build --detach --wait
 
       - name: Smoke-test containerized API
-        run: |
-          curl --fail --silent --show-error http://localhost:8080/actuator/health
-          curl --fail --silent --show-error http://localhost:8080/v3/api-docs
-          curl --fail --silent --show-error --request POST http://localhost:8080/api/admin/seed
-          curl --fail --silent --show-error "http://localhost:8080/api/hotels?name=Grand"
+        run: ./scripts/smoke-test-api.sh
 
       - name: Show container logs on failure
         if: failure()
