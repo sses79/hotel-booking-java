@@ -276,20 +276,26 @@ ID, name, and room count from the seed endpoint.
 The booking transaction is the most important part of the implementation.
 
 1. Validate the command before opening a transaction.
-2. Verify the hotel exists.
-3. Enter a bounded retry wrapper.
-4. Start a new SQL Server transaction at `SERIALIZABLE`.
+2. Enter a bounded retry wrapper.
+3. Start a new SQL Server transaction at `SERIALIZABLE`.
+4. Verify the hotel exists inside that transaction.
 5. Query suitable rooms and exclude overlapping bookings.
 6. Select the first room in deterministic order.
 7. Generate a booking reference.
 8. Insert and flush the booking.
-9. Commit.
-10. Load and return the booking details.
+9. Convert the flushed booking to response details.
+10. Commit and return those details.
 
 Use a retry wrapper outside a `TransactionTemplate`, so every retry creates and
 replays a complete new transaction. Do not place retry inside one transaction.
 Retry only recognized transient SQL Server failures such as deadlock victims;
 do not retry validation errors or normal no-availability conflicts.
+
+Keep the hotel existence check inside the replayed transaction. This ensures
+each retry observes a consistent database state and avoids a time-of-check to
+time-of-use gap. A post-commit reload is unnecessary because this schema has no
+database-generated booking values beyond those supplied by the application;
+the flushed entity already contains the response fields.
 
 The initial implementation should retain SQL Server and serializable range
 protection because that behavior has already been proven in the .NET version.
