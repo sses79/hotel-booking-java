@@ -74,6 +74,62 @@ class PersistenceModelIntegrationTests {
 	}
 
 	@Test
+	void roomTypeDatabaseConstraintRejectsUnsupportedText() {
+		testDataService.seed();
+
+		assertThatThrownBy(() -> jdbcClient.sql("""
+						INSERT INTO rooms (
+						    id,
+						    hotel_id,
+						    room_number,
+						    room_type,
+						    capacity
+						)
+						VALUES (
+						    :id,
+						    :hotelId,
+						    :roomNumber,
+						    :roomType,
+						    :capacity
+						)
+						""")
+				.param("id", UUID.randomUUID())
+				.param("hotelId", SeedData.GRAND_PLAZA_HOTEL_ID)
+				.param("roomNumber", "INVALID-TYPE")
+				.param("roomType", "PENTHOUSE")
+				.param("capacity", 2)
+				.update())
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void roomRequiresAnExistingHotelRelationship() {
+		assertThatThrownBy(() -> jdbcClient.sql("""
+						INSERT INTO rooms (
+						    id,
+						    hotel_id,
+						    room_number,
+						    room_type,
+						    capacity
+						)
+						VALUES (
+						    :id,
+						    :hotelId,
+						    :roomNumber,
+						    :roomType,
+						    :capacity
+						)
+						""")
+				.param("id", UUID.randomUUID())
+				.param("hotelId", UUID.randomUUID())
+				.param("roomNumber", "ORPHAN")
+				.param("roomType", "SINGLE")
+				.param("capacity", 1)
+				.update())
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
 	void duplicateRoomNumberWithinHotelIsRejected() {
 		var hotel = SeedData.createGrandPlazaHotel();
 		hotel.addRoom(new RoomEntity(

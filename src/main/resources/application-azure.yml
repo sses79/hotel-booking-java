@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST}:${DB_PORT:1433};databaseName=${DB_NAME};encrypt=true;trustServerCertificate=false;loginTimeout=30
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}

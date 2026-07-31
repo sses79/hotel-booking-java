@@ -76,4 +76,11 @@ class HotelBookingApplicationTests {
 				.andExpect(content().contentTypeCompatibleWith("text/html"));
 	}
 
+	@Test
+	void healthEndpointIsAvailable() throws Exception {
+		mockMvc.perform(get("/actuator/health"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("UP"));
+	}
+
 }

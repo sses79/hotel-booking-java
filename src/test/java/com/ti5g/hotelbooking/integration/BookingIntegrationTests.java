@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -45,6 +46,9 @@ class BookingIntegrationTests {
 
 	@Autowired
 	private BookingRepository bookingRepository;
+
+	@Autowired
+	private JdbcClient jdbcClient;
 
 	@Autowired
 	private AvailabilityBarrier availabilityBarrier;
@@ -235,6 +239,20 @@ class BookingIntegrationTests {
 				.extracting(result -> result.getResponse().getStatus())
 				.containsExactlyInAnyOrder(201, 409);
 		assertThat(bookingRepository.count()).isEqualTo(2);
+
+		var overlappingPairCount = jdbcClient.sql("""
+						SELECT COUNT(*)
+						FROM bookings first_booking
+						JOIN bookings second_booking
+						  ON first_booking.room_id = second_booking.room_id
+						 AND first_booking.id <> second_booking.id
+						 AND first_booking.check_in_date < second_booking.check_out_date
+						 AND second_booking.check_in_date < first_booking.check_out_date
+						""")
+				.query(Integer.class)
+				.single();
+
+		assertThat(overlappingPairCount).isZero();
 	}
 
 	@Test

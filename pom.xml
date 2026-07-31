@@ -29,6 +29,8 @@
 	<properties>
 		<java.version>21</java.version>
 		<maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
+		<native.java.version>25</native.java.version>
+		<paketo.builder>paketobuildpacks/builder-noble-java-tiny:0.0.141</paketo.builder>
 		<spotless-maven-plugin.version>3.6.0</spotless-maven-plugin.version>
 	</properties>
 	<dependencies>
@@ -176,10 +178,38 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.graalvm.buildtools</groupId>
+				<artifactId>native-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>native</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<image>
+								<builder>${paketo.builder}</builder>
+								<env>
+									<BP_JVM_VERSION>${native.java.version}</BP_JVM_VERSION>
+									<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
+									<BP_SPRING_CLOUD_BINDINGS_DISABLED>true</BP_SPRING_CLOUD_BINDINGS_DISABLED>
+								</env>
+							</image>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

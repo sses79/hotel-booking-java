@@ -9,7 +9,9 @@ in `src/main/resources`; local overrides belong in `application-local.yml`.
 Flyway owns the database schema through versioned files in
 `src/main/resources/db/migration`. Tests mirror the main package under
 `src/test/java`. Local SQL Server infrastructure is defined in
-`infra/local/compose.yaml`, while design and delivery notes live in `docs/`.
+`infra/local/compose.yaml`; optional Azure resources live in `infra/bicep`.
+Reusable verification scripts are under `scripts`, while design and delivery
+notes live in `docs/`.
 
 ## Build, Test, and Development Commands
 
@@ -18,13 +20,17 @@ Flyway owns the database schema through versioned files in
 - `docker compose --env-file .env -f infra/local/compose.yaml up -d --wait sql sql-init`
   starts SQL Server and creates the local `HotelBooking` database.
 - Add `--build` and omit the service names to run the containerized API too.
+- `./mvnw -Pnative -DskipTests spring-boot:build-image
+  -Dspring-boot.build-image.imageName=hotel-booking-java:native` builds the
+  optional GraalVM native container through Paketo Buildpacks.
 - `./mvnw spring-boot:run -Dspring-boot.run.profiles=local` runs the API after
   variables from `.env` have been exported.
 - `docker compose --env-file .env -f infra/local/compose.yaml down` stops local
   services while preserving database data.
 
 Use Java 21. Always use the Maven Wrapper rather than a globally installed
-Maven version.
+Maven version. Native release images must be built on Linux AMD64 because
+GraalVM does not cross-compile native executables.
 
 ## Coding Style & Naming Conventions
 

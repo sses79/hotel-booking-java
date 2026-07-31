@@ -21,6 +21,25 @@ services:
     networks:
       - hotel-booking
 
+  app-native:
+    image: ${NATIVE_IMAGE_NAME:-hotel-booking-java:native}
+    profiles:
+      - native
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_HOST: sql
+      DB_PORT: 1433
+      DB_NAME: HotelBooking
+      DB_USER: sa
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+    ports:
+      - "8081:8080"
+    depends_on:
+      sql-init:
+        condition: service_completed_successfully
+    networks:
+      - hotel-booking
+
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     platform: linux/amd64

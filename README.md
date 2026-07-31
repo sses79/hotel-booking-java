@@ -1,11 +1,13 @@
 # Hotel Booking API
 
 Java and Spring Boot implementation of the hotel booking backend challenge.
-Phases 1 through 5 provide the application scaffold, SQL Server development
+Phases 1 through 6 provide the application scaffold, SQL Server development
 environment, Flyway schema, JPA model, domain rules, deterministic test data,
 hotel search, room availability, health endpoint, OpenAPI tooling, and SQL
 Server-backed booking and concurrency tests. Phase 5 adds reviewer-focused API
 documentation, build guardrails, HTTP examples, and an application container.
+Phase 6 adds an optional GraalVM native image and Azure deployment path while
+retaining the Temurin JVM workflow for normal development.
 
 ## Prerequisites
 
@@ -36,6 +38,56 @@ GitHub Actions validates Docker Compose, formatting, dependencies, and the
 complete Maven suite with Temurin Java 21. It then builds the application image
 and smoke-tests it with SQL Server. Integration tests create their own SQL
 Server through Testcontainers, so CI does not need database secrets.
+
+After changes reach `main`, the native-image workflow builds a Linux AMD64
+GraalVM executable with Spring AOT and Paketo Buildpacks. It smoke-tests that
+image before publishing `ghcr.io/sses79/hotel-booking-java:<commit-sha>`.
+
+## GraalVM Native Container
+
+The native release is intentionally built by
+`.github/workflows/native-image.yml` on GitHub's Linux AMD64 runner. This keeps
+the CPU- and memory-intensive compilation out of the normal Mac development
+loop and produces the architecture Azure needs.
+
+After the workflow exists on `main`, start a release build with:
+
+```bash
+gh workflow run native-image.yml --ref main
+```
+
+Docker can also build a host-architecture native container without a local
+GraalVM installation. This is optional: native-image can overwhelm a
+memory-constrained Mac. Only build locally when Docker can use about 10 GB
+while macOS still has adequate headroom; otherwise use the GitHub workflow.
+
+```bash
+./mvnw \
+  -Pnative \
+  -DskipTests \
+  spring-boot:build-image \
+  -Dspring-boot.build-image.imageName=hotel-booking-java:native
+```
+
+Run it against local SQL Server on port `8081`, then execute the complete smoke
+flow:
+
+```bash
+NATIVE_IMAGE_NAME=hotel-booking-java:native \
+  docker compose \
+  --env-file .env \
+  -f infra/local/compose.yaml \
+  --profile native \
+  up -d sql sql-init app-native
+
+BASE_URL=http://localhost:8081 ./scripts/smoke-test-api.sh
+```
+
+On Apple Silicon, this creates a Linux ARM64 image. Release images are built on
+GitHub's Linux AMD64 runner because native executables are platform-specific.
+The application continues to compile to Java 21 bytecode, while the Paketo
+builder uses NIK/GraalVM 25 because Spring Boot 4 requires that native compiler
+generation.
 
 ## Run Locally
 
@@ -166,3 +218,13 @@ docker compose --env-file .env -f infra/local/compose.yaml up -d --wait
 
 The database schema is owned by Flyway. Hibernate validates mappings against
 that schema and does not create or update tables.
+
+## Optional Azure Deployment
+
+`infra/bicep` provisions an Azure Container Apps Consumption environment and
+an Azure SQL Database serverless database. The application uses the `azure`
+Spring profile, encrypted SQL connections, Flyway migrations, health probes,
+scale-to-zero, and the immutable native GHCR image.
+
+See [Azure deployment](docs/azure-deployment.md) for parameters, preview,
+deployment, cost, registry visibility, and verification commands.
